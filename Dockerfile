@@ -26,7 +26,8 @@ RUN \
     python3-pip \
     git \
     php \
-    composer && \
+    composer \
+    php-codesniffer && \
   apt-get upgrade -y && \
   apt-get clean && \
   rm -rf \
