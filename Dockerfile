@@ -25,7 +25,8 @@ RUN \
     docker-ce-cli \
     python3-pip \
     git \
-    php && \
+    php \
+    composer && \
   apt-get upgrade -y && \
   apt-get clean && \
   rm -rf \
