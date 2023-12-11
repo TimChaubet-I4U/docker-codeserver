@@ -24,7 +24,8 @@ RUN \
   apt-get install -y \
     docker-ce-cli \
     python3-pip \
-    git && \
+    git \
+    php && \
   apt-get upgrade -y && \
   apt-get clean && \
   rm -rf \
