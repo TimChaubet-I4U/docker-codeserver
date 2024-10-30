@@ -37,20 +37,20 @@ RUN \
     /var/tmp/* && \ 
   usermod -aG sudo abc 2>&1
 #RUN pip install --no-cache-dir -r requirements.txt
-pip install --no-cache-dir f5-sphinx-theme
-pip install --no-cache-dir Sphinx
-pip install --no-cache-dir sphinx-autobuild
-pip install --no-cache-dir sphinx-rtd-theme
-pip install --no-cache-dir sphinxcontrib-addmetahtml
-pip install --no-cache-dir sphinxcontrib-blockdiag
-pip install --no-cache-dir sphinxcontrib-googleanalytics
-pip install --no-cache-dir sphinxcontrib-images
-pip install --no-cache-dir sphinxcontrib-nwdiag
-pip install --no-cache-dir sphinxcontrib-websupport
-pip install --no-cache-dir sphinxjp.themes.basicstrap
-pip install --no-cache-dir recommonmark
-pip install --no-cache-dir restview
-pip install --no-cache-dir myst-parser
+pip3 install --no-cache-dir f5-sphinx-theme
+pip3 install --no-cache-dir Sphinx
+pip3 install --no-cache-dir sphinx-autobuild
+pip3 install --no-cache-dir sphinx-rtd-theme
+pip3 install --no-cache-dir sphinxcontrib-addmetahtml
+pip3 install --no-cache-dir sphinxcontrib-blockdiag
+pip3 install --no-cache-dir sphinxcontrib-googleanalytics
+pip3 install --no-cache-dir sphinxcontrib-images
+pip3 install --no-cache-dir sphinxcontrib-nwdiag
+pip3 install --no-cache-dir sphinxcontrib-websupport
+pip3 install --no-cache-dir sphinxjp.themes.basicstrap
+pip3 install --no-cache-dir recommonmark
+pip3 install --no-cache-dir restview
+pip3 install --no-cache-dir myst-parser
 
 EXPOSE 8443
 VOLUME ["/config"]
