@@ -37,20 +37,20 @@ RUN \
     /var/tmp/* && \ 
   usermod -aG sudo abc 2>&1
 #RUN pip install --no-cache-dir -r requirements.txt
-pip3 install --no-cache-dir f5-sphinx-theme
-pip3 install --no-cache-dir Sphinx
-pip3 install --no-cache-dir sphinx-autobuild
-pip3 install --no-cache-dir sphinx-rtd-theme
-pip3 install --no-cache-dir sphinxcontrib-addmetahtml
-pip3 install --no-cache-dir sphinxcontrib-blockdiag
-pip3 install --no-cache-dir sphinxcontrib-googleanalytics
-pip3 install --no-cache-dir sphinxcontrib-images
-pip3 install --no-cache-dir sphinxcontrib-nwdiag
-pip3 install --no-cache-dir sphinxcontrib-websupport
-pip3 install --no-cache-dir sphinxjp.themes.basicstrap
-pip3 install --no-cache-dir recommonmark
-pip3 install --no-cache-dir restview
-pip3 install --no-cache-dir myst-parser
+RUN /usr/bin/pip install --no-cache-dir f5-sphinx-theme && \
+    /usr/bin/pip install --no-cache-dir Sphinx && \
+    /usr/bin/pip install --no-cache-dir sphinx-autobuild && \
+    /usr/bin/pip install --no-cache-dir sphinx-rtd-theme && \
+    /usr/bin/pip install --no-cache-dir sphinxcontrib-addmetahtml && \
+    /usr/bin/pip install --no-cache-dir sphinxcontrib-blockdiag && \
+    /usr/bin/pip install --no-cache-dir sphinxcontrib-googleanalytics && \
+    /usr/bin/pip install --no-cache-dir sphinxcontrib-images && \
+    /usr/bin/pip install --no-cache-dir sphinxcontrib-nwdiag && \
+    /usr/bin/pip install --no-cache-dir sphinxcontrib-websupport && \
+    /usr/bin/pip install --no-cache-dir sphinxjp.themes.basicstrap && \
+    /usr/bin/pip install --no-cache-dir recommonmark && \
+    /usr/bin/pip install --no-cache-dir restview && \
+    /usr/bin/pip install --no-cache-dir myst-parser
 
 EXPOSE 8443
 VOLUME ["/config"]
