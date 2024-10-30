@@ -23,6 +23,7 @@ RUN \
   apt-get update && \
   apt-get install -y \
     docker-ce-cli \
+    python3 \
     python3-pip \
     git \
     php \
@@ -37,20 +38,20 @@ RUN \
     /var/tmp/* && \ 
   usermod -aG sudo abc 2>&1
 #RUN pip install --no-cache-dir -r requirements.txt
-RUN /usr/bin/pip install --no-cache-dir f5-sphinx-theme && \
-    /usr/bin/pip install --no-cache-dir Sphinx && \
-    /usr/bin/pip install --no-cache-dir sphinx-autobuild && \
-    /usr/bin/pip install --no-cache-dir sphinx-rtd-theme && \
-    /usr/bin/pip install --no-cache-dir sphinxcontrib-addmetahtml && \
-    /usr/bin/pip install --no-cache-dir sphinxcontrib-blockdiag && \
-    /usr/bin/pip install --no-cache-dir sphinxcontrib-googleanalytics && \
-    /usr/bin/pip install --no-cache-dir sphinxcontrib-images && \
-    /usr/bin/pip install --no-cache-dir sphinxcontrib-nwdiag && \
-    /usr/bin/pip install --no-cache-dir sphinxcontrib-websupport && \
-    /usr/bin/pip install --no-cache-dir sphinxjp.themes.basicstrap && \
-    /usr/bin/pip install --no-cache-dir recommonmark && \
-    /usr/bin/pip install --no-cache-dir restview && \
-    /usr/bin/pip install --no-cache-dir myst-parser
+RUN pip install --no-cache-dir f5-sphinx-theme && \
+    pip install --no-cache-dir Sphinx && \
+    pip install --no-cache-dir sphinx-autobuild && \
+    pip install --no-cache-dir sphinx-rtd-theme && \
+    pip install --no-cache-dir sphinxcontrib-addmetahtml && \
+    pip install --no-cache-dir sphinxcontrib-blockdiag && \
+    pip install --no-cache-dir sphinxcontrib-googleanalytics && \
+    pip install --no-cache-dir sphinxcontrib-images && \
+    pip install --no-cache-dir sphinxcontrib-nwdiag && \
+    pip install --no-cache-dir sphinxcontrib-websupport && \
+    pip install --no-cache-dir sphinxjp.themes.basicstrap && \
+    pip install --no-cache-dir recommonmark && \
+    pip install --no-cache-dir restview && \
+    pip install --no-cache-dir myst-parser
 
 EXPOSE 8443
 VOLUME ["/config"]
