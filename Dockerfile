@@ -42,11 +42,11 @@ RUN apt-get update && \
     /var/tmp/* && \ 
   usermod -aG sudo abc 2>&1
 #RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir f5-sphinx-theme Sphinx sphinx-autobuild \
-    sphinx-rtd-theme sphinxcontrib-addmetahtml sphinxcontrib-blockdiag \
-    sphinxcontrib-googleanalytics sphinxcontrib-images sphinxcontrib-nwdiag \
-    sphinxcontrib-websupport sphinxjp.themes.basicstrap recommonmark \
-    restview myst-parser
+#RUN pip install --no-cache-dir f5-sphinx-theme Sphinx sphinx-autobuild \
+#    sphinx-rtd-theme sphinxcontrib-addmetahtml sphinxcontrib-blockdiag \
+#    sphinxcontrib-googleanalytics sphinxcontrib-images sphinxcontrib-nwdiag \
+#    sphinxcontrib-websupport sphinxjp.themes.basicstrap recommonmark \
+#    restview myst-parser
 
 EXPOSE 8443
 VOLUME ["/config"]
