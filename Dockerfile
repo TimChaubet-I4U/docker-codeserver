@@ -1,4 +1,5 @@
 FROM linuxserver/code-server:latest
+# FROM codercom/code-server:latest
 ARG BUILD_DATE
 ARG VERSION
 ARG CODE_RELEASE
@@ -30,6 +31,8 @@ RUN \
     composer \
     php-codesniffer \
     npm && \
+  curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+  apt-get install -y nodejs && \
   apt-get upgrade -y && \
   apt-get clean 
 RUN apt-get update && \
