@@ -28,7 +28,8 @@ RUN \
     git \
     php \
     composer \
-    php-codesniffer && \
+    php-codesniffer \
+    npm && \
   apt-get upgrade -y && \
   apt-get clean 
 RUN apt-get update && \
