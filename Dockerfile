@@ -33,7 +33,7 @@ RUN \
     php-codesniffer \
     golang \
     gcc \
-    g++
+    g++ \
     npm && \
   curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
   apt-get install -y nodejs && \
