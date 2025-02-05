@@ -3,7 +3,7 @@ FROM linuxserver/code-server:latest
 ARG BUILD_DATE
 ARG VERSION
 ARG CODE_RELEASE
-LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
+LABEL build_version="Linuxserver.io fork version:- ${VERSION} Build-date:- ${BUILD_DATE}"
 LABEL maintainer="tim@chaubet.be"
 ARG DEBIAN_FRONTEND="noninteractive"
 ENV HOME="/config"
@@ -26,10 +26,14 @@ RUN \
     docker-ce-cli \
     python3 \
     python3-pip \
+    python3-venv \
     git \
     php \
     composer \
     php-codesniffer \
+    golang \
+    gcc \
+    g++
     npm && \
   curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
   apt-get install -y nodejs && \
@@ -39,6 +43,8 @@ RUN apt-get update && \
   apt-get install -y \
     build-essential \
     libgraphviz-dev && \
+  apt-get autoremove -y && \
+  apt-get autoclean -y && \
   rm -rf \
     /config/* \
     /tmp/* \
