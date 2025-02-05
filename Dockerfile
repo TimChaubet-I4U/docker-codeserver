@@ -43,8 +43,16 @@ RUN \
   apt-get install -y \
     build-essential \
     libgraphviz-dev && \
+  apt-get remove -y nodejs npm && \
+  curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+  apt-get install -y nodejs && \
+  npm install -g npm@11.1.0 && \
+  cd /app/code-server/lib/vscode && \
+  npm install --force && \
+  npm audit fix && \
   apt-get autoremove -y && \
   apt-get autoclean -y && \
+  apt-get clean -y && \
   rm -rf \
     /config/* \
     /tmp/* \
