@@ -94,3 +94,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e PROXY_DOMAIN=code-server.my.domain` | If this optional variable is set, this domain will be proxied for subdomain proxying. See [Documentation](https://github.com/cdr/code-server/blob/master/docs/FAQ.md#sub-domains) |
 | `-e DEFAULT_WORKSPACE=/config/workspace` | If this optional variable is set, code-server will open this directory by default |
 | `-v /config` | Contains all relevant configuration files. |
+
+## Firefox
+
+- To enable the rightclick menu, set dom.events.testing.asyncClipboard to True in `about:config`
