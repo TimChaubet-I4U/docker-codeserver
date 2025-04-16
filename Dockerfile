@@ -59,7 +59,7 @@ RUN \
     /var/lib/apt/lists/* \
     /var/tmp/* && \ 
   usermod -aG sudo abc 2>&1
-#RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 #RUN pip install --no-cache-dir f5-sphinx-theme Sphinx sphinx-autobuild \
 #    sphinx-rtd-theme sphinxcontrib-addmetahtml sphinxcontrib-blockdiag \
 #    sphinxcontrib-googleanalytics sphinxcontrib-images sphinxcontrib-nwdiag \
