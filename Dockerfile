@@ -34,7 +34,9 @@ RUN \
     golang \
     gcc \
     g++ \
-    npm && \
+    npm \
+    mypy \
+    python3-mypy && \
   curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
   apt-get install -y nodejs && \
   apt-get upgrade -y && \
@@ -59,7 +61,7 @@ RUN \
     /var/lib/apt/lists/* \
     /var/tmp/* && \ 
   usermod -aG sudo abc 2>&1
-RUN pip install --no-cache-dir -r requirements.txt
+#RUN pip install --no-cache-dir --break-system-packages -r requirements.txt
 #RUN pip install --no-cache-dir f5-sphinx-theme Sphinx sphinx-autobuild \
 #    sphinx-rtd-theme sphinxcontrib-addmetahtml sphinxcontrib-blockdiag \
 #    sphinxcontrib-googleanalytics sphinxcontrib-images sphinxcontrib-nwdiag \

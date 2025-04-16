@@ -9,7 +9,7 @@
 # sphinxcontrib-nwdiag 
 # sphinxcontrib-websupport 
 # sphinxjp.themes.basicstrap 
-recommonmark
-restview
+# recommonmark
+# restview
 # myst-parser
 mypy
