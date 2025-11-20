@@ -36,6 +36,7 @@ RUN \
     g++ \
     npm \
     mypy \
+    tree \
     python3-mypy && \
   curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
   apt-get install -y nodejs && \
