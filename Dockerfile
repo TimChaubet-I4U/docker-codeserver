@@ -1,8 +1,9 @@
 FROM linuxserver/code-server:latest
+# FROM codercom/code-server:latest
 ARG BUILD_DATE
 ARG VERSION
 ARG CODE_RELEASE
-LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
+LABEL build_version="Linuxserver.io fork version:- ${VERSION} Build-date:- ${BUILD_DATE}"
 LABEL maintainer="tim@chaubet.be"
 ARG DEBIAN_FRONTEND="noninteractive"
 ENV HOME="/config"
@@ -23,16 +24,50 @@ RUN \
   apt-get update && \
   apt-get install -y \
     docker-ce-cli \
+    python3 \
     python3-pip \
-    git && \
+    python3-venv \
+    git \
+    php \
+    composer \
+    php-codesniffer \
+    golang \
+    gcc \
+    g++ \
+    npm \
+    mypy \
+    tree \
+    python3-mypy && \
+  curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+  apt-get install -y nodejs && \
   apt-get upgrade -y && \
   apt-get clean && \
+  apt-get update && \
+  apt-get install -y \
+    build-essential \
+    libgraphviz-dev && \
+  apt-get remove -y nodejs npm && \
+  curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+  apt-get install -y nodejs && \
+  npm install -g npm@11.1.0 && \
+  cd /app/code-server/lib/vscode && \
+  npm install --force && \
+  npm audit fix && \
+  apt-get autoremove -y && \
+  apt-get autoclean -y && \
+  apt-get clean -y && \
   rm -rf \
     /config/* \
     /tmp/* \
     /var/lib/apt/lists/* \
     /var/tmp/* && \ 
   usermod -aG sudo abc 2>&1
-RUN pip install --no-cache-dir -r requirements.txt
+#RUN pip install --no-cache-dir --break-system-packages -r requirements.txt
+#RUN pip install --no-cache-dir f5-sphinx-theme Sphinx sphinx-autobuild \
+#    sphinx-rtd-theme sphinxcontrib-addmetahtml sphinxcontrib-blockdiag \
+#    sphinxcontrib-googleanalytics sphinxcontrib-images sphinxcontrib-nwdiag \
+#    sphinxcontrib-websupport sphinxjp.themes.basicstrap recommonmark \
+#    restview myst-parser
+
 EXPOSE 8443
 VOLUME ["/config"]
