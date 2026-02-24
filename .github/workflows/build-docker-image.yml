@@ -2,8 +2,6 @@ name: Daily build (latest + version)
 
 on:
   schedule:
-    # GitHub Actions cron is UTC.
-    # 05:00 UTC = 06:00 Brussels (CET) during winter.
     - cron: "0 5 * * *"
   workflow_dispatch: {}
 
@@ -17,11 +15,35 @@ env:
 
 jobs:
   build:
+    name: Build and push images
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Compute image repo (lowercase owner) and version tag
+        id: vars
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          OWNER_LOWER="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
+          IMAGE_REPO="${REGISTRY}/${OWNER_LOWER}/${IMAGE_NAME}"
+
+          # LinuxServer publishes a GitHub release tag like: "4.109.2-ls317"
+          # Strip "-ls###" suffix -> "4.109.2"
+          TAG="$(curl -fsSL https://api.github.com/repos/linuxserver/docker-code-server/releases/latest | jq -r .tag_name)"
+          VER="${TAG%%-ls*}"
+
+          echo "Owner (lower): ${OWNER_LOWER}"
+          echo "Image repo: ${IMAGE_REPO}"
+          echo "LinuxServer release tag: ${TAG}"
+          echo "Derived code-server version: ${VER}"
+
+          echo "owner_lower=${OWNER_LOWER}" >> "$GITHUB_OUTPUT"
+          echo "image_repo=${IMAGE_REPO}" >> "$GITHUB_OUTPUT"
+          echo "version=${VER}" >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -36,29 +58,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Determine current LinuxServer code-server version
-        id: lsver
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          # LinuxServer publishes a GitHub release tag like: "4.109.2-ls317"
-          # We'll strip the "-ls###" suffix to get "4.109.2"
-          TAG="$(curl -fsSL https://api.github.com/repos/linuxserver/docker-code-server/releases/latest | jq -r .tag_name)"
-          VER="${TAG%%-ls*}"
-
-          echo "LinuxServer release tag: $TAG"
-          echo "Derived code-server version: $VER"
-
-          echo "version=$VER" >> "$GITHUB_OUTPUT"
-
       - name: Build & push :latest (base = linuxserver/code-server:latest)
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
+            ${{ steps.vars.outputs.image_repo }}:latest
           build-args: |
             LS_TAG=latest
             BUILD_DATE=${{ github.run_id }}
@@ -66,16 +72,16 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build & push :${{ steps.lsver.outputs.version }} (base = linuxserver/code-server:version-<ver>)
+      - name: Build & push :${{ steps.vars.outputs.version }} (base = linuxserver/code-server:version-<ver>)
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ steps.lsver.outputs.version }}
+            ${{ steps.vars.outputs.image_repo }}:${{ steps.vars.outputs.version }}
           build-args: |
-            LS_TAG=version-${{ steps.lsver.outputs.version }}
+            LS_TAG=version-${{ steps.vars.outputs.version }}
             BUILD_DATE=${{ github.run_id }}
-            VERSION=${{ steps.lsver.outputs.version }}
+            VERSION=${{ steps.vars.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
