@@ -9,14 +9,17 @@ docker codeserver with docker-cli and vim
   - [2.1. Setup differences with basic linuxserver/code-server image](#21-setup-differences-with-basic-linuxservercode-server-image)
   - [2.2. Hashed code-server password](#22-hashed-code-server-password)
 - [3. Usage](#3-usage)
-  - [3.1. docker-compose (recommended, [click here for more info](https://docs.linuxserver.io/general/docker-compose))](#31-docker-compose-recommended-click-here-for-more-infohttpsdocslinuxserveriogeneraldocker-compose)
-  - [3.2. code-marketplace](#32-code-marketplace)
+  - [3.1. docker-compose](#31-docker-compose)
+  - [3.2. Source control](#32-source-control)
+  - [3.3. code-marketplace](#33-code-marketplace)
 - [4. Parameters](#4-parameters)
 - [5. Firefox](#5-firefox)
 
 <!-- /TOC -->
 ## 1. credits
- - linuxserver.io
+
+ This is a fork from [linuxserver.io/code-server](https://docs.linuxserver.io/images/docker-code-server/).<br>
+ It has docker cli and python3 built-in.
 
 ## 2. Application Setup
 
@@ -28,11 +31,7 @@ For github integration, drop your ssh key in to `/config/.ssh`.
 - use PGID & PUID 0
 - map volume /var/run/docker.sock:/var/run/docker.sock
 - map your dockerfiles as a volume
-
-```bash
-git config --global user.name "username"
-git config --global user.email "email address"
-```
+- configure the Microsoft extensions gallery instead of the much more limited default one. 
 
 ### 2.2. Hashed code-server password
 
@@ -42,7 +41,7 @@ How to create the [hashed password](https://github.com/cdr/code-server/blob/mast
 
 Here are some example snippets to help you get started creating a container.
 
-### 3.1. docker-compose (recommended, [click here for more info](https://docs.linuxserver.io/general/docker-compose))
+### 3.1. docker-compose
 
 ```yaml
 networks:
@@ -91,7 +90,17 @@ services:
       timeout: 10s
       retries: 5       
 ```
-### 3.2. code-marketplace
+
+### 3.2. Source control
+
+To work with git, set git credentials via a terminal
+
+```bash
+git config --global user.name "username"
+git config --global user.email "email address"
+```
+
+### 3.3. code-marketplace
 
 If you want to run your own limited extension library, use this and replace the EXTENSIONS_GALLERY env var.
 ``` yaml
@@ -117,6 +126,8 @@ If you want to run your own limited extension library, use this and replace the 
       retries: 5
       start_period: 5s
 ```
+
+
 
 ## 4. Parameters
 
