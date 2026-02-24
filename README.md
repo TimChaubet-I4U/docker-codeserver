@@ -18,7 +18,7 @@ docker codeserver with docker-cli and vim
 <!-- /TOC -->
 ## 1. credits
 
- This is a fork from [linuxserver.io/code-server](https://docs.linuxserver.io/images/docker-code-server/).<br>
+ This is a fork of [linuxserver.io/code-server](https://docs.linuxserver.io/images/docker-code-server/).<br>
  It has docker cli and python3 built-in.
 
 ## 2. Application Setup
