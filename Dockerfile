@@ -1,13 +1,17 @@
-FROM linuxserver/code-server:latest
-# FROM codercom/code-server:latest
+ARG LS_TAG=latest
+FROM linuxserver/code-server:${LS_TAG}
+
 ARG BUILD_DATE
 ARG VERSION
 ARG CODE_RELEASE
 LABEL build_version="Linuxserver.io fork version:- ${VERSION} Build-date:- ${BUILD_DATE}"
 LABEL maintainer="tim@chaubet.be"
+
 ARG DEBIAN_FRONTEND="noninteractive"
 ENV HOME="/config"
+
 COPY ./requirements.txt requirements.txt
+
 RUN \
   echo "**** install runtime dependencies ****" && \
   apt-get update && \
@@ -60,14 +64,8 @@ RUN \
     /config/* \
     /tmp/* \
     /var/lib/apt/lists/* \
-    /var/tmp/* && \ 
+    /var/tmp/* && \
   usermod -aG sudo abc 2>&1
-#RUN pip install --no-cache-dir --break-system-packages -r requirements.txt
-#RUN pip install --no-cache-dir f5-sphinx-theme Sphinx sphinx-autobuild \
-#    sphinx-rtd-theme sphinxcontrib-addmetahtml sphinxcontrib-blockdiag \
-#    sphinxcontrib-googleanalytics sphinxcontrib-images sphinxcontrib-nwdiag \
-#    sphinxcontrib-websupport sphinxjp.themes.basicstrap recommonmark \
-#    restview myst-parser
 
 EXPOSE 8443
 VOLUME ["/config"]
