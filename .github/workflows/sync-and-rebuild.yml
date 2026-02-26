@@ -25,29 +25,25 @@ jobs:
         run: |
           git config --global user.name "Tim Chaubet"
           git config --global user.email "action@github.com"
-          
           git remote add upstream https://github.com/TrueOsiris/docker-codeserver.git
           git fetch upstream main
-          
-          # MERGE instead of RESET. This preserves history.
-          # '--strategy-option theirs' favors upstream if there is a conflict.
-          git merge upstream/main --strategy-option theirs -m "Merge upstream updates" || echo "No changes to merge"
-          
-          # Cleanup unwanted upstream workflows
+          git merge upstream/main --strategy-option theirs -m "Merge upstream updates" || echo "No changes"
           rm -f .github/workflows/build-docker-image.yml
 
       - name: Set Image Name to Lowercase
         run: |
-          IMAGE_PATH="ghcr.io/${{ github.repository }}:latest"
+          # Changed from docker-codeserver to codeserver
+          IMAGE_PATH="ghcr.io/${{ github.repository_owner }}/codeserver:latest"
           echo "IMAGE_TAG=$(echo $IMAGE_PATH | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Update README Image Reference
         run: |
-          # Update the line to point to your GHCR image
-          sed -i "s|image: ghcr.io/trueosiris/codeserver:latest|image: ${{ env.IMAGE_TAG }}|g" README.md
+          # This replaces ANY ghcr.io/timchaubet-i4u/... line with the new one
+          # It also handles the transition from the old TrueOsiris line
+          sed -i "s|image: ghcr.io/.*codeserver:latest|image: ${{ env.IMAGE_TAG }}|g" README.md
           
           git add README.md
-          git commit -m "docs: update README image reference" || echo "No changes"
+          git commit -m "docs: update README image to ${{ env.IMAGE_TAG }}" || echo "No changes"
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -65,6 +61,4 @@ jobs:
 
       - name: Standard Push
         run: |
-          # We use a standard push now. 
-          # This allows your codeserver to 'Sync' (Pull) without conflicts.
           git push origin main
