@@ -53,7 +53,7 @@ networks:
       
 services:
   codeserver:
-    image: ghcr.io/timchaubet-i4u/docker-codeserver:latest
+    image: ghcr.io/timchaubet-i4u/codeserver:latest
     environment:
       PUID: 0
       PGID: 0
