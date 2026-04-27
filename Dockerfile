@@ -40,7 +40,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 
 # Step 3: Main Package Installation
-# REMOVED 'npm' from list as 'nodejs' from NodeSource includes it.
+# REMOVED 'npm' from this list. NodeSource 'nodejs' already provides it.
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
     apt-get upgrade -y && \
