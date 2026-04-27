@@ -12,7 +12,6 @@ on:
   workflow_dispatch:
 
 env:
-  # Opt-in to Node 24 to resolve deprecation warnings
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/codeserver
@@ -53,11 +52,8 @@ jobs:
           PRIMARY_TAG="${{ fromJSON(steps.meta.outputs.json).tags[0] }}"
           sed -i "s|image: ghcr.io/.*codeserver:latest|image: ${PRIMARY_TAG}|g" README.md
           git add README.md
-          # Check if there are changes to commit to avoid empty commit errors
           if ! git diff --cached --exit-code; then
             git commit -m "docs: update README image to ${PRIMARY_TAG}"
-          else
-            echo "No changes to README.md"
           fi
 
       - name: Log in to GHCR
