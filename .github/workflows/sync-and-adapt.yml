@@ -53,15 +53,19 @@ jobs:
         run: |
           PRIMARY_TAG="${{ fromJSON(steps.meta.outputs.json).tags[0] }}"
           
-          # 1. Point README to TimChaubet-I4U registry
+          # Fix the README link
           sed -i "s|ghcr.io/trueosiris/[^[:space:]]*|${PRIMARY_TAG}|g" README.md
           
-          # 2. Fix the internal builder metadata if it was overwritten by the sync
-          sed -i "s|REPO_SHORT: .*|REPO_SHORT: \${{ github.repository_owner }}/codeserver|g" .github/workflows/build-docker-image.yml || echo "Build workflow not found"
+          # Force the sync'd build workflow to point to your owner, not TrueOsiris
+          # This fixes the IMAGE_NAME and REPO_SHORT lines
+          sed -i "s|IMAGE_NAME: .*|IMAGE_NAME: \${{ github.repository_owner }}/codeserver|g" .github/workflows/build-docker-image.yml
+          sed -i "s|REPO_SHORT: .*|REPO_SHORT: \${{ github.repository_owner }}/codeserver|g" .github/workflows/build-docker-image.yml
           
-          git add README.md .github/workflows/build-docker-image.yml || echo "Nothing to stage"
+          git config --global user.name "Tim Chaubet"
+          git config --global user.email "action@github.com"
+          git add README.md .github/workflows/build-docker-image.yml
           if ! git diff --cached --exit-code; then
-            git commit -m "chore: adapt registry references for TimChaubet-I4U"
+            git commit -m "chore: adapt registry references and force owner"
           fi
 
       - name: Log in to Company GHCR
