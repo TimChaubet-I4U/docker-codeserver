@@ -14,7 +14,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/codeserver
-  # This kills the warning until the actions are fully updated by GitHub
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true 
 
 jobs:
@@ -23,13 +22,14 @@ jobs:
     permissions:
       contents: write
       packages: write
-      id-token: write
 
     steps:
       - name: Checkout Fork
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # Using your specific PAT secret for repo access
+          token: ${{ secrets.pat_codeserver }}
 
       - name: Sync with Master (TrueOsiris)
         run: |
@@ -37,6 +37,7 @@ jobs:
           git config --global user.email "action@github.com"
           git remote add upstream https://github.com/TrueOsiris/docker-codeserver.git
           git fetch upstream main
+          # Merge changes from Master; 'theirs' prioritizes Master's code updates
           git merge upstream/main --strategy-option theirs -m "Sync: Merge updates from TrueOsiris" || echo "No changes"
 
       - name: Adapt README and Metadata
@@ -51,11 +52,14 @@ jobs:
       - name: Rewrite References
         run: |
           PRIMARY_TAG="${{ fromJSON(steps.meta.outputs.json).tags[0] }}"
-          sed -i "s|ghcr.io/trueosiris/[^[:space:]]*|${PRIMARY_TAG}|g" README.md
-          # Ensure the internal build script also targets this owner
-          sed -i "s|REPO_SHORT: .*|REPO_SHORT: \${{ github.repository_owner }}/codeserver|g" .github/workflows/build-docker-image.yml || echo "File not found"
           
-          git add README.md .github/workflows/build-docker-image.yml || echo "Nothing to add"
+          # 1. Point README to TimChaubet-I4U registry
+          sed -i "s|ghcr.io/trueosiris/[^[:space:]]*|${PRIMARY_TAG}|g" README.md
+          
+          # 2. Fix the internal builder metadata if it was overwritten by the sync
+          sed -i "s|REPO_SHORT: .*|REPO_SHORT: \${{ github.repository_owner }}/codeserver|g" .github/workflows/build-docker-image.yml || echo "Build workflow not found"
+          
+          git add README.md .github/workflows/build-docker-image.yml || echo "Nothing to stage"
           if ! git diff --cached --exit-code; then
             git commit -m "chore: adapt registry references for TimChaubet-I4U"
           fi
@@ -65,7 +69,8 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          # Using your specific PAT secret for registry access
+          password: ${{ secrets.pat_codeserver }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
