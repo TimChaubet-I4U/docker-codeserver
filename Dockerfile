@@ -1,4 +1,4 @@
-# File: .github/workflows/sync-and-rebuild.yml
+# File: Dockerfile
 # Author: Tim Chaubet
 
 ARG LS_TAG=latest
@@ -38,7 +38,6 @@ RUN install -m 0755 -d /etc/apt/keyrings && \
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 
 # Step 3: Main Package Installation & Final Cleanup
-# 'npm' is excluded as NodeSource 'nodejs' provides it.
 RUN apt-get update && \
     apt-get install -y \
         docker-ce-cli \
@@ -61,11 +60,16 @@ RUN apt-get update && \
     apt-get clean -y && \
     rm -rf /config/* /tmp/* /var/lib/apt/lists/* /var/tmp/*
 
-# Step 4: Application Specific Logic (NPM Upgrade & VS Code Libs)
+# Step 4: Application Specific Logic
+# Added a check for directory existence and --unsafe-perm for root execution
 RUN npm install -g npm@11.1.0 && \
-    cd /app/code-server/lib/vscode && \
-    npm install --force && \
-    npm audit fix
+    if [ -d "/app/code-server/lib/vscode" ]; then \
+        cd /app/code-server/lib/vscode && \
+        npm install --force --unsafe-perm && \
+        npm audit fix; \
+    else \
+        echo "Warning: VSCode lib directory not found, skipping npm install"; \
+    fi
 
 # Step 5: Final Permissions and User Setup
 RUN usermod -aG sudo abc
