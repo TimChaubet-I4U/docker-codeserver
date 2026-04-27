@@ -1,0 +1,90 @@
+# File: .github/workflows/sync-and-adapt.yml
+# Author: Tim Chaubet
+
+name: Sync and Adapt for Company GHCR
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Daily sync
+  push:
+    branches:
+      - main # Build on every commit or sync
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  # This resolves to I4U-TimChaubet/docker-codeserver or I4U-TimChaubet/codeserver
+  IMAGE_NAME: ${{ github.repository_owner }}/codeserver
+
+jobs:
+  sync-and-rebuild:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout Fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync with Master (TrueOsiris)
+        run: |
+          git config --global user.name "Tim Chaubet"
+          git config --global user.email "action@github.com"
+          git remote add upstream https://github.com/TrueOsiris/docker-codeserver.git
+          git fetch upstream main
+          # Merge master into fork; use 'theirs' to get the latest master logic
+          git merge upstream/main --strategy-option theirs -m "Sync: Merge updates from TrueOsiris" || echo "No changes"
+
+      - name: Adapt README and Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Rewrite References
+        run: |
+          PRIMARY_TAG="${{ fromJSON(steps.meta.outputs.json).tags[0] }}"
+          
+          # 1. Update README to point to the I4U-TimChaubet registry
+          # This replaces any TrueOsiris registry link with your company link
+          sed -i "s|ghcr.io/trueosiris/[^[:space:]]*|${PRIMARY_TAG}|g" README.md
+          
+          # 2. Update the build workflow itself if it was overwritten during sync
+          # This ensures the internal IMAGE_NAME always targets your owner
+          sed -i "s|REPO_SHORT: .*|REPO_SHORT: \${{ github.repository_owner }}/codeserver|g" .github/workflows/build-docker-image.yml
+          
+          git add README.md .github/workflows/build-docker-image.yml
+          if ! git diff --cached --exit-code; then
+            git commit -m "chore: adapt registry references for I4U-TimChaubet"
+          fi
+
+      - name: Log in to Company GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push to Company Registry
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          pull: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Push Synced & Adapted Code to Fork
+        run: |
+          git push origin main
