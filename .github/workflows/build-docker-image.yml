@@ -1,7 +1,7 @@
-# File: .github/workflows/sync-and-rebuild.yml
+# File: .github/workflows/build-docker-image.yml
 # Author: Tim Chaubet
 
-name: Sync, Build, and Update
+name: Build and Push
 
 on:
   schedule:
@@ -13,44 +13,45 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/codeserver
+  REPO_FULL: ${{ github.repository }}
+  REPO_SHORT: ${{ github.repository_owner }}/codeserver
 
 jobs:
-  sync-and-build:
+  build-and-push:
     runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
 
     steps:
-      - name: Checkout your repo
-        uses: actions/checkout@v4 # v4 is current, the warning will vanish as GitHub updates runners
-
-      - name: Merge Upstream Changes
-        run: |
-          git config --global user.name "Tim Chaubet"
-          git config --global user.email "action@github.com"
-          git remote add upstream https://github.com/TrueOsiris/docker-codeserver.git
-          git fetch upstream main
-          git merge upstream/main --strategy-option theirs -m "Merge upstream updates" || echo "No changes"
-          rm -f .github/workflows/build-docker-image.yml
+      - name: Checkout Repo
+        uses: actions/checkout@v4
 
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: |
+            ${{ env.REGISTRY }}/${{ env.REPO_FULL }}
+            ${{ env.REGISTRY }}/${{ env.REPO_SHORT }}
           tags: |
             type=raw,value=latest
             type=sha,format=short
 
       - name: Update README Image Reference
         run: |
+          # Grabs the first tag (REPO_FULL) to update the documentation
           PRIMARY_TAG="${{ fromJSON(steps.meta.outputs.json).tags[0] }}"
-          sed -i "s|image: ghcr.io/.*codeserver:latest|image: ${PRIMARY_TAG}|g" README.md
+          
+          # Replaces the old registry link with the newly built tag
+          sed -i "s|image: ghcr.io/trueosiris/codeserver:latest|image: ${PRIMARY_TAG}|g" README.md
+          
+          git config --global user.name "Tim Chaubet"
+          git config --global user.email "action@github.com"
           git add README.md
           if ! git diff --cached --exit-code; then
-            git commit -m "docs: update README image to ${PRIMARY_TAG}"
+            git commit -m "docs: update image reference to ${PRIMARY_TAG}"
+            git push origin main
           fi
 
       - name: Log in to GHCR
@@ -68,11 +69,9 @@ jobs:
         with:
           context: .
           push: true
+          # Pull forces a check for the latest linuxserver base image
+          pull: true 
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Standard Push
-        run: |
-          git push origin main
