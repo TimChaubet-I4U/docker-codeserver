@@ -1,3 +1,6 @@
+# File: Dockerfile
+# Author: Tim Chaubet
+
 ARG LS_TAG=latest
 FROM linuxserver/code-server:${LS_TAG}
 
@@ -13,21 +16,31 @@ ENV HOME="/config"
 COPY ./requirements.txt requirements.txt
 
 RUN \
-  echo "**** install runtime dependencies ****" && \
+  echo "**** install core dependencies ****" && \
   apt-get update && \
   apt-get install -y \
     vim \
     ca-certificates \
     curl \
     gnupg \
-    lsb-release && \
+    lsb-release \
+    build-essential \
+    libgraphviz-dev && \
+  \
+  echo "**** setup docker repo ****" && \
   mkdir -m 0755 -p /etc/apt/keyrings && \
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list 2>&1 && \
+    $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+  \
+  echo "**** setup nodejs repo ****" && \
+  curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+  \
+  echo "**** install packages ****" && \
   apt-get update && \
   apt-get install -y \
     docker-ce-cli \
+    nodejs \
     python3 \
     python3-pip \
     python3-venv \
@@ -38,34 +51,25 @@ RUN \
     golang \
     gcc \
     g++ \
-    npm \
     mypy \
     tree \
     python3-mypy && \
-  curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-  apt-get install -y nodejs && \
-  apt-get upgrade -y && \
-  apt-get clean && \
-  apt-get update && \
-  apt-get install -y \
-    build-essential \
-    libgraphviz-dev && \
-  apt-get remove -y nodejs npm && \
-  curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-  apt-get install -y nodejs && \
+  \
+  echo "**** configure node and app ****" && \
   npm install -g npm@11.1.0 && \
   cd /app/code-server/lib/vscode && \
   npm install --force && \
   npm audit fix && \
-  apt-get autoremove -y && \
-  apt-get autoclean -y && \
-  apt-get clean -y && \
+  \
+  echo "**** cleanup ****" && \
+  usermod -aG sudo abc && \
+  apt-get purge -y --auto-remove && \
+  apt-get clean && \
   rm -rf \
     /config/* \
     /tmp/* \
     /var/lib/apt/lists/* \
-    /var/tmp/* && \
-  usermod -aG sudo abc 2>&1
+    /var/tmp/*
 
 EXPOSE 8443
 VOLUME ["/config"]
