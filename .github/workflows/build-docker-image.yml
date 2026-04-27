@@ -13,8 +13,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  REPO_FULL: ${{ github.repository }}
-  REPO_SHORT: ${{ github.repository_owner }}/codeserver
+  REPO_FULL: TimChaubet-I4U/codeserver
+  REPO_SHORT: TimChaubet-I4U/codeserver
 
 jobs:
   build-and-push:
