@@ -1,7 +1,7 @@
 # File: .github/workflows/sync-and-adapt.yml
 # Author: Tim Chaubet
 
-name: Sync and Adapt for Company GHCR
+name: Sync and Adapt (Excluding Workflows)
 
 on:
   schedule:
@@ -28,17 +28,26 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # Using your new classic token secret
           token: ${{ secrets.ghcr_rights }}
 
-      - name: Sync with Master (TrueOsiris)
+      - name: Sync Code ONLY (Excluding Workflows)
         run: |
           git config --global user.name "Tim Chaubet"
           git config --global user.email "action@github.com"
+          
           git remote add upstream https://github.com/TrueOsiris/docker-codeserver.git
           git fetch upstream main
-          # Merge from upstream; 'theirs' prioritizes master updates
-          git merge upstream/main --strategy-option theirs -m "Sync: Merge updates from TrueOsiris" || echo "No changes"
+          
+          # 1. Start the merge but don't commit it yet
+          git merge upstream/main --no-commit --no-ff --strategy-option theirs
+          
+          # 2. Force the .github/workflows directory back to your local version
+          # This prevents upstream's build-and-push.yml from appearing or changing yours
+          git checkout HEAD -- .github/workflows/
+          
+          # 3. Finalize the merge
+          # The [skip ci] prevents this push from triggering other actions
+          git commit -m "Sync: Merge code from upstream (Excluding Workflows) [skip ci]" || echo "No changes to sync"
 
       - name: Extract Metadata
         id: meta
@@ -49,22 +58,17 @@ jobs:
             type=raw,value=latest
             type=sha,format=short
 
-      - name: Rewrite References and PUSH CODE
+      - name: Rewrite README References and PUSH
         run: |
           PRIMARY_TAG="${{ fromJSON(steps.meta.outputs.json).tags[0] }}"
           
-          # Fix README link to point to your I4U registry
+          # Update README to point to your I4U registry
           sed -i "s|ghcr.io/trueosiris/[^[:space:]]*|${PRIMARY_TAG}|g" README.md
           
-          # Fix build workflow references to point to your account (codeserver shortname)
-          sed -i "s|IMAGE_NAME: .*|IMAGE_NAME: \${{ github.repository_owner }}/codeserver|g" .github/workflows/build-docker-image.yml
-          sed -i "s|REPO_FULL: .*|REPO_FULL: \${{ github.repository_owner }}/codeserver|g" .github/workflows/build-docker-image.yml
-          sed -i "s|REPO_SHORT: .*|REPO_SHORT: \${{ github.repository_owner }}/codeserver|g" .github/workflows/build-docker-image.yml
-          
-          git add README.md .github/workflows/build-docker-image.yml
+          git add README.md
           if ! git diff --cached --exit-code; then
-            git commit -m "chore: adapt registry references and force registry targets"
-            # Push code changes now so they are saved even if Docker fails
+            # Adding [skip ci] here again just to be safe
+            git commit -m "chore: adapt registry references [skip ci]"
             git push origin main
           fi
 
