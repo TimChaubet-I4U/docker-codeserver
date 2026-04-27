@@ -10,66 +10,69 @@ ARG CODE_RELEASE
 LABEL build_version="Linuxserver.io fork version:- ${VERSION} Build-date:- ${BUILD_DATE}"
 LABEL maintainer="tim@chaubet.be"
 
-ARG DEBIAN_FRONTEND="noninteractive"
 ENV HOME="/config"
 
 COPY ./requirements.txt requirements.txt
 
-RUN \
-  echo "**** install core dependencies ****" && \
-  apt-get update && \
-  apt-get install -y \
-    vim \
-    ca-certificates \
-    curl \
-    gnupg \
-    lsb-release \
-    build-essential \
-    libgraphviz-dev && \
-  \
-  echo "**** setup docker repo ****" && \
-  mkdir -m 0755 -p /etc/apt/keyrings && \
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+# Step 1: Core OS Utilities
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+        vim \
+        ca-certificates \
+        curl \
+        gnupg \
+        lsb-release \
+        build-essential \
+        libgraphviz-dev && \
+    apt-get autoremove -y && \
+    apt-get autoclean -y && \
+    apt-get clean -y && \
+    rm -rf /config/* /tmp/* /var/lib/apt/lists/* /var/tmp/*
+
+# Step 2: External Repositories (Docker & NodeSource)
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    mkdir -m 0755 -p /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
     $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
-  \
-  echo "**** setup nodejs repo ****" && \
-  curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-  \
-  echo "**** install packages ****" && \
-  apt-get update && \
-  apt-get install -y \
-    docker-ce-cli \
-    nodejs \
-    python3 \
-    python3-pip \
-    python3-venv \
-    git \
-    php \
-    composer \
-    php-codesniffer \
-    golang \
-    gcc \
-    g++ \
-    mypy \
-    tree \
-    python3-mypy && \
-  \
-  echo "**** configure node and app ****" && \
-  npm install -g npm@11.1.0 && \
-  cd /app/code-server/lib/vscode && \
-  npm install --force && \
-  npm audit fix && \
-  \
-  echo "**** cleanup ****" && \
-  usermod -aG sudo abc && \
-  apt-get purge -y --auto-remove && \
-  apt-get clean && \
-  rm -rf \
-    /config/* \
-    /tmp/* \
-    /var/lib/apt/lists/* \
-    /var/tmp/*
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+
+# Step 3: Main Package Installation
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+        docker-ce-cli \
+        nodejs \
+        python3 \
+        python3-pip \
+        python3-venv \
+        git \
+        php \
+        composer \
+        php-codesniffer \
+        golang \
+        gcc \
+        g++ \
+        npm \
+        mypy \
+        tree \
+        python3-mypy && \
+    apt-get autoremove -y && \
+    apt-get autoclean -y && \
+    apt-get clean -y && \
+    rm -rf /config/* /tmp/* /var/lib/apt/lists/* /var/tmp/*
+
+# Step 4: Application Specific Logic (VS Code Libs)
+RUN npm install -g npm@11.1.0 && \
+    cd /app/code-server/lib/vscode && \
+    npm install --force && \
+    npm audit fix
+
+# Step 5: Final Permissions and User Setup
+RUN usermod -aG sudo abc
 
 EXPOSE 8443
 VOLUME ["/config"]
