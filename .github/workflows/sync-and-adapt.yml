@@ -5,16 +5,17 @@ name: Sync and Adapt for Company GHCR
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Daily sync
+    - cron: '0 0 * * *'
   push:
     branches:
-      - main # Build on every commit or sync
+      - main
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
-  # This resolves to I4U-TimChaubet/docker-codeserver or I4U-TimChaubet/codeserver
   IMAGE_NAME: ${{ github.repository_owner }}/codeserver
+  # This kills the warning until the actions are fully updated by GitHub
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true 
 
 jobs:
   sync-and-rebuild:
@@ -22,6 +23,7 @@ jobs:
     permissions:
       contents: write
       packages: write
+      id-token: write
 
     steps:
       - name: Checkout Fork
@@ -35,7 +37,6 @@ jobs:
           git config --global user.email "action@github.com"
           git remote add upstream https://github.com/TrueOsiris/docker-codeserver.git
           git fetch upstream main
-          # Merge master into fork; use 'theirs' to get the latest master logic
           git merge upstream/main --strategy-option theirs -m "Sync: Merge updates from TrueOsiris" || echo "No changes"
 
       - name: Adapt README and Metadata
@@ -50,18 +51,13 @@ jobs:
       - name: Rewrite References
         run: |
           PRIMARY_TAG="${{ fromJSON(steps.meta.outputs.json).tags[0] }}"
-          
-          # 1. Update README to point to the I4U-TimChaubet registry
-          # This replaces any TrueOsiris registry link with your company link
           sed -i "s|ghcr.io/trueosiris/[^[:space:]]*|${PRIMARY_TAG}|g" README.md
+          # Ensure the internal build script also targets this owner
+          sed -i "s|REPO_SHORT: .*|REPO_SHORT: \${{ github.repository_owner }}/codeserver|g" .github/workflows/build-docker-image.yml || echo "File not found"
           
-          # 2. Update the build workflow itself if it was overwritten during sync
-          # This ensures the internal IMAGE_NAME always targets your owner
-          sed -i "s|REPO_SHORT: .*|REPO_SHORT: \${{ github.repository_owner }}/codeserver|g" .github/workflows/build-docker-image.yml
-          
-          git add README.md .github/workflows/build-docker-image.yml
+          git add README.md .github/workflows/build-docker-image.yml || echo "Nothing to add"
           if ! git diff --cached --exit-code; then
-            git commit -m "chore: adapt registry references for I4U-TimChaubet"
+            git commit -m "chore: adapt registry references for TimChaubet-I4U"
           fi
 
       - name: Log in to Company GHCR
