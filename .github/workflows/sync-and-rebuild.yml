@@ -8,6 +8,10 @@ on:
     - cron: '0 0 * * *'
   workflow_dispatch:
 
+env:
+  # Opt-in to Node 24 to resolve deprecation warnings
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   sync-and-build:
     runs-on: ubuntu-latest
@@ -32,16 +36,12 @@ jobs:
 
       - name: Set Image Name to Lowercase
         run: |
-          # Changed from docker-codeserver to codeserver
           IMAGE_PATH="ghcr.io/${{ github.repository_owner }}/codeserver:latest"
           echo "IMAGE_TAG=$(echo $IMAGE_PATH | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Update README Image Reference
         run: |
-          # This replaces ANY ghcr.io/timchaubet-i4u/... line with the new one
-          # It also handles the transition from the old TrueOsiris line
           sed -i "s|image: ghcr.io/.*codeserver:latest|image: ${{ env.IMAGE_TAG }}|g" README.md
-          
           git add README.md
           git commit -m "docs: update README image to ${{ env.IMAGE_TAG }}" || echo "No changes"
 
@@ -53,7 +53,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6 # Updated to v6
         with:
           context: .
           push: true
